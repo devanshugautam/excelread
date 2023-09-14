@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"
+        integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+        integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <title>Xml Tags Finder</title>
+</head>
+<style>
+    .alertStyle {
+        color: red;
+    }
+
+    .cursorPointer {
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .cursorPointer:hover {
+        color: rgb(10, 10, 212) !important;
+    }
+
+    .cardShadow {
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+    }
+
+    tbody {
+        display: block;
+        max-height: 400px;
+        overflow-y: scroll;
+    }
+
+    thead,
+    tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+</style>
+
+<body>
+    <div class="container mb-4">
+        <div class="container text-center mt-4 mb-4">
+            <h1>Xml Tags Finder</h1>
+        </div>
+        <div class="card p-4 border-0 cardShadow mb-3">
+            <div class="container row mt-2">
+                <div class="col">
+                    <h5>Path</h5>
+                </div>
+                <div class="col-auto">
+                    <p id="pathOne">
+                        <%=data.path%>
+                    </p>
+                </div>
+            </div>
+            <div class="container">
+                <form class="mt-4" id="formSubmit">
+                    <input type="text" value="<%=data.path%>" hidden id="path">
+                    <input type="text" value="<%=data.fileLocation%>" hidden id="fileLocation">
+                    <select class="form-select mb-3" id="12345" aria-label="Default select example">
+                        <!-- <option selected>Open this select menu</option> -->
+                        <%for(let ele of data.data){ %>
+                            <option value="<%=ele%>">
+                                <%=ele%>
+                            </option>
+                            <%}%>
+                    </select>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+        <div class="card border-0 cardShadow mt-4">
+            <div class="container card-header text-center mb-2">
+                <h2>Configure Table With xml Tags</h2>
+            </div>
+            <div class="container px-3">
+                <table class="table table-hover mb-1" id="table">
+                    <thead class="text-center table-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Table Name</th>
+                            <th scope="col">Column Name</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center" id="tableBody">
+                        <%let index=0;%>
+                            <%for(let ele of data.tables){ %>
+                                <%for(let columns of ele.Columns){ %>
+                                    <%index++;%>
+                                        <tr>
+                                            <th scope="row">
+                                                <%=index%>
+                                            </th>
+                                            <td>
+                                                <%=ele.Table%>
+                                            </td>
+                                            <td>
+                                                <%=columns%>
+                                            </td>
+                                            <td>
+                                                <select class="form-select form-select-sm text-center"
+                                                    id="tableBodySelect<%=index%>" aria-label="Default select example">
+                                                    <!-- <option selected>Open this select menu</option> -->
+                                                    <%for(let ele of data.data){ %>
+                                                        <option value="<%=data.path ? data.path+'/'+ele : ele%>">
+                                                            <%=ele%>
+                                                        </option>
+                                                        <%}%>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <%}%>
+                                            <%}%>
+                    </tbody>
+                </table>
+                <button class="btn btn-primary my-3" onclick="handleTableClick(this)">Submit</button>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+<script>
+    $("#formSubmit").submit((e) => {
+        e.preventDefault();
+        const parent = $("#12345").val();
+        const path = $("#path").val();
+        const fileLocation = $("#fileLocation").val();
+        ajaXCall(parent, fileLocation, path);
+    });
+    function handelCLick(val) {
+        var values = "";
+        for (var att, i = 0, atts = val.attributes, n = atts.length; i < n; i++) {
+            att = atts[i];
+            if (att.nodeName == 'href') {
+                values = att.nodeValue
+            }
+        }
+        const fileLocation = $("#fileLocation").val();
+        ajaXCall(values, fileLocation, null);
+    }
+
+    function handleTableClick(value) {
+        // let table = document.getElementById('table');
+        var selectElements = document.querySelectorAll('select');
+        var rowData = [];
+        var rowDataObj = {};
+        selectElements.forEach(function (select) {
+            var row = {};
+            var tableRow = select.closest('tr');
+
+            // Fetch other row data
+            // var index = tableRow?.querySelector('th') && tableRow.querySelector('th').textContent;
+            var tableName = tableRow?.querySelector('td:nth-child(2)') && tableRow.querySelector('td:nth-child(2)').textContent;
+            var columnName = tableRow?.querySelector('td:nth-child(3)') && tableRow.querySelector('td:nth-child(3)').textContent;
+
+            // Fetch selected option value
+            var selectedValue = select.options[select.selectedIndex].value;
+
+            // Create JSON object with row data
+            // row.index = index;
+            // row.tableName = tableName;
+            // row.columnName = columnName;
+            // row.selectedValue = selectedValue;
+
+            // row.index && rowData.push(row);
+            if (tableName) {
+                if (rowDataObj[tableName]) {
+                    rowDataObj[tableName].push([columnName, selectedValue]);
+                } else {
+                    rowDataObj[tableName] = [[columnName, selectedValue]];
+                }
+            }
+        });
+        // Use the rowData array as needed
+        console.log('rowDatarowDatarowDatarowData>>>>>>', rowData);
+        console.log('rowDataObj>>>>>>', rowDataObj);
+    }
+
+    function ajaXCall(parent, fileLocation, path = null) {
+        $.ajax({
+            type: 'post',
+            data: { parent: path ? `${path}/${parent}` : parent, fileLocation },
+            url: '/api/v1/xmlToDb',
+            success: function (data) {
+                if (data.data.success && data.data.data.data != null) {
+                    const pathValue = data.data.data.path.split('/');
+                    if (pathValue.length > 0) {
+                        // console.log('data.data.data.path.split("/")', pathValue);
+                        // Get the p element of id pathOne
+                        var p = document.getElementById('pathOne');
+
+                        // Set the inner HTML of the p
+                        var pathInnerHtml = '<span>';
+                        if (pathValue.length > 1) {
+                            for (let i = 0; i < pathValue.length; i++) {
+                                if (i == pathValue.length - 1) pathInnerHtml += `<span class="text-primary m-1 cursorPointer" href="${data.data.data.path.split('/').slice(0, i + 1).join("/")}" id="pathID${i}" onclick="handelCLick(this)">${pathValue[i].split('_').join(" ")}</span>`;
+                                else pathInnerHtml += `<span class="text-primary m-1 cursorPointer" href="${data.data.data.path.split('/').slice(0, i + 1).join("/")}" id="pathID${i}" onclick="handelCLick(this)">${pathValue[i].split('_').join(" ")}</span>/`;
+                            }
+                        } else {
+                            pathInnerHtml += `<span class="text-primary m-1 cursorPointer" href="${pathValue[0]}" id="pathID0" onclick="handelCLick(this)">${pathValue[0].split('_').join(" ")}</span>/`;
+                        }
+                        pathInnerHtml += '</span>'
+                        p.innerHTML = pathInnerHtml;
+                    }
+
+
+                    // Get the form element
+                    var form = document.getElementById("formSubmit");
+
+
+                    // Set the inner HTML of the form
+                    var htmlInner = `<input type="text" value="${data.data.data.path}" hidden id="path">`;
+                    htmlInner += `<input type="text" value="${data.data.data.fileLocation}" hidden id="fileLocation">`;
+                    htmlInner += `<select class="form-select mb-3" id="12345" aria-label="Default select example">`;
+                    for (let ele of data.data.data.data) htmlInner += `<option value="${ele}">${ele}</option>`;
+                    htmlInner += `</select>`;
+                    htmlInner += `<button type="submit" class="btn btn-primary">Submit</button>`;
+
+                    form.innerHTML = htmlInner;
+
+                    //  Get the tBody element
+                    let tableBody = document.getElementById('tableBody');
+                    let index = 0;
+                    let tbodyInnerHtml = '';
+                    for (let ele of data.data.data.tables) {
+                        for (let columns of ele.Columns) {
+                            index++;
+                            tbodyInnerHtml += '<tr>'
+                            tbodyInnerHtml += `<th scope="row">${index}</th>`;
+                            tbodyInnerHtml += `<td>${ele.Table}</td>`;
+                            tbodyInnerHtml += `<td>${columns}</td>`;
+                            tbodyInnerHtml += `<td>`;
+                            tbodyInnerHtml += `<select class="form-select form-select-sm text-center" id="tableBodySelect" aria-label="Default select example">`
+                            for (let ele of data.data.data.data) tbodyInnerHtml += `<option value="${data.data.data.path && `${data.data.data.path}/`}${ele}">${ele}</option>`;
+                            tbodyInnerHtml += `</select >`;
+                            tbodyInnerHtml += `</td >`;
+                            tbodyInnerHtml += `</tr >`;
+                        }
+                    }
+                    tableBody.innerHTML = tbodyInnerHtml;
+
+                } else {
+                    alert(`${data.data.message}:- ${data.data.data.path}`);
+                }
+            }
+        });
+    }
+</script>
+
+</html>

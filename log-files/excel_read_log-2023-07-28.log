@@ -1,0 +1,4 @@
+2023-07-28 09:31:37 INFO [server/app] ~~~ setting up middlewares for app ~~~
+2023-07-28 09:31:37 INFO [server/index] ~~~ excel-read v1.0.0 ~~~
+2023-07-28 09:31:48 INFO [dataSource/db] Database Connected......
+2023-07-28 09:31:48 INFO [server/index] 🌷 excel-read src/server/index.js, version 1.0.0, listening on port 4040!
